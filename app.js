@@ -13,6 +13,85 @@ const render = require("./lib/htmlRenderer");
 
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
+const roleChoices = [
+
+    {
+        name: "Employee",
+        value: "employee",
+        short: "employee",
+    },
+    {
+        name: "Engineer",
+        value: "engineer",
+        short: "engineer",
+    },
+    {
+        name: "Manager",
+        value: "manager",
+        short: "manager",
+    },
+    {
+        name: "Intern",
+        value: "intern",
+        short: "intern",
+    },
+
+]
+
+const questions = [
+    {
+        type: "input",
+        name: "employeeName",
+        message: "Employee name:",
+    },
+    {
+        type: "input",
+        name: "employeeId",
+        message: "Employee id:",
+    },
+    {
+        type: "input",
+        name: "employeeEmail",
+        message: "Employee e-mail:",
+        validate: function (value) {
+            const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            return re.test(String(value).toLowerCase()) || "Please enter a properly formatted e-mail";
+        }
+    },
+    {
+        type: "list",
+        name: "employeeRole",
+        message: "Employee role:",
+        choices: roleChoices,
+
+    },
+]
+
+const engineerQuestions = [
+    {
+        type: "input",
+        name: "engineerGithub",
+        message: "GitHub Username:"
+    }
+]
+
+
+const managerQuestions = [
+    {
+        type: "input",
+        name: "managerOffice",
+        message: "Office Number:"
+    }
+]
+
+
+const internQuestions = [
+    {
+        type: "input",
+        name: "internSchool",
+        message: "School:"
+    }
+]
 
 // After the user has input all employees desired, call the `render` function (required
 // above) and pass in an array containing all employee objects; the `render` function will
