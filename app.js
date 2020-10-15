@@ -87,9 +87,17 @@ const questions = [
 
 ]
 
+const writeOutputFile = (htmlOutput, outputFile, outputDir) => {
+    if (outputDir) {
+        return true;
+    } else {
+        return false;
+    }
 
-function getEmployees() {
-    inquirer.prompt(questions)
+}
+
+async function getEmployees() {
+    await inquirer.prompt(questions)
         .then((answers) => {
             switch (answers.employeeRole) {
                 case "intern":
@@ -122,8 +130,7 @@ function getEmployees() {
             if (answers.addAnother) {
                 getEmployees();
             } else {
-                const htmlOut = render(responses);
-                console.log(htmlOut);
+                return answers;
             }
         });
 
@@ -148,4 +155,17 @@ function getEmployees() {
 // object with the correct structure and methods. This structure will be crucial in order
 // for the provided `render` function to work! ```
 
-getEmployees();
+async function main() {
+    try {
+        const answers = await getEmployees();
+        const htmlOut = await render(responses);
+        console.log(htmlOut);
+
+    }
+    catch (e) {
+        throw e;
+
+    }
+}
+
+main();
