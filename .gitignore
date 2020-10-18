@@ -1,3 +1,5 @@
+# Project specific output
+output/
 # Logs
 logs
 *.log
