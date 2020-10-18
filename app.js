@@ -3,10 +3,11 @@ const Engineer = require("./lib/Engineer");
 const Intern = require("./lib/Intern");
 const inquirer = require("inquirer");
 const path = require("path");
-const fs = require("fs");
+const fs = require("fs").promises;
 
 const OUTPUT_DIR = path.resolve(__dirname, "output");
 const outputPath = path.join(OUTPUT_DIR, "team.html");
+const mkdirOptions = { recusive: true };
 
 const render = require("./lib/htmlRenderer");
 const Employee = require("./lib/Employee");
@@ -78,63 +79,103 @@ const questions = [
         message: "School:",
         when: (answers) => answers.employeeRole === "intern",
     },
-    {
-        type: "confirm",
-        name: "addAnother",
-        message: "Add another employee",
-        default: true,
-    }
 
 ]
 
-const writeOutputFile = (htmlOutput, outputFile, outputDir) => {
-    if (outputDir) {
-        return true;
-    } else {
-        return false;
+const createOutputDir = async () => {
+    try {
+        await fs.access(OUTPUT_DIR)
+    }
+    catch (e) {
+        await fs.mkdir(OUTPUT_DIR, mkdirOptions).catch(console.error);
+    }
+}
+
+const writeOutputFile = async (data) => {
+    try {
+        await fs.writeFile(outputPath, data, "utf8")
+    }
+    catch (e) {
+        throw e;
     }
 
 }
 
-async function getEmployees() {
-    await inquirer.prompt(questions)
-        .then((answers) => {
-            switch (answers.employeeRole) {
-                case "intern":
-                    const intern = new Intern(answers.employeeName, answers.employeeId, answers.employeeEmail, answers.internSchool)
-                    responses.push(intern);
-                    console.log(responses);
-
-                    break;
-
-                case "engineer":
-                    const engineer = new Engineer(answers.employeeName, answers.employeeId, answers.employeeEmail, answers.engineerGithub)
-                    responses.push(engineer);
-                    console.log(responses);
-
-
-                    break;
-                case "manager":
-                    const manager = new Manager(answers.employeeName, answers.employeeId, answers.employeeEmail, answers.managerOffice)
-                    responses.push(manager);
-                    console.log(responses);
-
-                    break;
-
-                // default:
-                //     const employee = new Employee(answers.employeeName, answers.employeeId, answers.employeeEmail, answers.managerOffice)
-                //     responses.push(employee);
-                //     console.log(responses);
-                //     break;
-            }
-            if (answers.addAnother) {
-                getEmployees();
-            } else {
-                return answers;
-            }
-        });
-
+const pushEmployee = async (employee) => {
+    try {
+        switch (employee.employeeRole) {
+            case "intern":
+                const intern = new Intern(employee.employeeName, employee.employeeId, employee.employeeEmail, employee.internSchool)
+                responses.push(intern);
+                break;
+            case "engineer":
+                const engineer = new Engineer(employee.employeeName, employee.employeeId, employee.employeeEmail, employee.engineerGithub)
+                responses.push(engineer);
+                break;
+            case "manager":
+                const manager = new Manager(employee.employeeName, employee.employeeId, employee.employeeEmail, employee.managerOffice)
+                responses.push(manager);
+                break;
+        }
+    }
+    catch (e) {
+        throw e;
+    }
 }
+
+const getEmployee = async () => {
+    try {
+        const employee = await inquirer.prompt(questions);
+        await pushEmployee(employee)
+
+        const again = await inquirer.prompt([
+            {
+                type: "confirm",
+                name: "addAnother",
+                message: "Add another employee",
+                default: true,
+            },
+        ]);
+        if (again.addAnother) {
+            await getEmployee();
+        }
+    } catch (error) {
+
+    }
+}
+// async function getEmployees() {
+//     await inquirer.prompt(questions)
+//         .then((answers) => {
+//             switch (answers.employeeRole) {
+//                 case "intern":
+//                     const intern = new Intern(answers.employeeName, answers.employeeId, answers.employeeEmail, answers.internSchool)
+//                     responses.push(intern);
+//                     console.log(responses);
+
+//                     break;
+
+//                 case "engineer":
+//                     const engineer = new Engineer(answers.employeeName, answers.employeeId, answers.employeeEmail, answers.engineerGithub)
+//                     responses.push(engineer);
+//                     console.log(responses);
+
+
+//                     break;
+//                 case "manager":
+//                     const manager = new Manager(answers.employeeName, answers.employeeId, answers.employeeEmail, answers.managerOffice)
+//                     responses.push(manager);
+//                     console.log(responses);
+
+//                     break;
+//             }
+//             if (answers.addAnother) {
+//                 getEmployees();
+//             } else {
+//                 return answers;
+//             }
+//         });
+
+// }
 // After the user has input all employees desired, call the `render` function (required
 // above) and pass in an array containing all employee objects; the `render` function will
 // generate and return a block of HTML including templated divs for each employee!
@@ -157,9 +198,11 @@ async function getEmployees() {
 
 async function main() {
     try {
-        const answers = await getEmployees();
+        await getEmployee();
         const htmlOut = await render(responses);
         console.log(htmlOut);
+        await createOutputDir();
+        await writeOutputFile(htmlOut);
 
     }
     catch (e) {
