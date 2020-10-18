@@ -13,8 +13,7 @@ const render = require("./lib/htmlRenderer");
 const Employee = require("./lib/Employee");
 
 const responses = [];
-// Write code to use inquirer to gather information about the development team members,
-// and to create objects for each team member (using the correct classes as blueprints!)
+
 const roleChoices = [
     {
         name: "Engineer",
@@ -148,7 +147,6 @@ async function main() {
     try {
         await getEmployee();
         const htmlOut = await render(responses);
-        console.log(htmlOut);
         await createOutputDir();
         await writeOutputFile(htmlOut);
 
